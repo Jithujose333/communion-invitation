@@ -90,7 +90,7 @@ export default function App() {
                   textDecoration: 'underline'
                 }}
               >
-                Admin Panel
+                admin -Piston
               </button>
             </div>
           </footer>

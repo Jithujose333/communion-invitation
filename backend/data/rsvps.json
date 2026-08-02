@@ -1,0 +1,42 @@
+[
+  {
+    "_id": "mpkx5pqf36tcd",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "attending": true,
+    "guests": 2,
+    "dietaryRequirements": "Gluten Free",
+    "message": "Congrats!",
+    "submittedAt": "2026-05-25T08:03:05.991Z"
+  },
+  {
+    "_id": "mpkycq0vqxrxy",
+    "name": "jithu",
+    "email": "efgf@gmail.com",
+    "attending": true,
+    "guests": 1,
+    "dietaryRequirements": "",
+    "message": "",
+    "submittedAt": "2026-05-25T08:36:32.575Z"
+  },
+  {
+    "_id": "mplb0n2l0z55i",
+    "name": "jithu",
+    "email": "j@gmail.com",
+    "attending": true,
+    "guests": 2,
+    "dietaryRequirements": "",
+    "message": "all the best",
+    "submittedAt": "2026-05-25T14:31:03.885Z"
+  },
+  {
+    "_id": "msc5n735hyz84",
+    "name": "Uncle George",
+    "email": "george@example.com",
+    "attending": true,
+    "guests": 2,
+    "dietaryRequirements": "",
+    "message": "Blessings to Felix and Festin on this holy day!",
+    "submittedAt": "2026-08-02T18:49:49.985Z"
+  }
+]

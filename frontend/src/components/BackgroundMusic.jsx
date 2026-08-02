@@ -22,6 +22,37 @@ const BackgroundMusic = forwardRef(({ showButton }, ref) => {
     }
   }));
 
+  const wasPlayingRef = useRef(false);
+
+  // Handle page visibility change (minimizing browser, locking phone, screen off)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!audioRef.current) return;
+
+      if (document.hidden) {
+        if (isPlaying) {
+          audioRef.current.pause();
+          wasPlayingRef.current = true;
+          setIsPlaying(false);
+        }
+      } else {
+        if (wasPlayingRef.current) {
+          audioRef.current.play()
+            .then(() => {
+              setIsPlaying(true);
+              wasPlayingRef.current = false;
+            })
+            .catch((err) => console.warn("Failed to resume audio:", err));
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isPlaying]);
+
   const toggleMusic = () => {
     if (!audioRef.current) return;
 

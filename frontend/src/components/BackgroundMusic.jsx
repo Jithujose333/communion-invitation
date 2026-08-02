@@ -1,24 +1,37 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 
-export default function BackgroundMusic({ autoStart }) {
+const BackgroundMusic = forwardRef(({ showButton }, ref) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [apiReady, setApiReady] = useState(false);
   const playerRef = useRef(null);
 
-  // Load YouTube Player API
+  // Expose play/pause controls directly to the parent App component
+  useImperativeHandle(ref, () => ({
+    play: () => {
+      if (playerRef.current && typeof playerRef.current.playVideo === 'function') {
+        playerRef.current.playVideo();
+        setIsPlaying(true);
+      }
+    },
+    pause: () => {
+      if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
+        playerRef.current.pauseVideo();
+        setIsPlaying(false);
+      }
+    }
+  }));
+
+  // Load YouTube Player API script immediately on mount
   useEffect(() => {
-    // If global YT object is already loaded, just set ready
     if (window.YT && window.YT.Player) {
       setApiReady(true);
       return;
     }
 
-    // Otherwise, load script dynamically
     const tag = document.createElement('script');
     tag.src = 'https://www.youtube.com/iframe_api';
     
-    // Set callback
     window.onYouTubeIframeAPIReady = () => {
       setApiReady(true);
     };
@@ -31,12 +44,11 @@ export default function BackgroundMusic({ autoStart }) {
     }
 
     return () => {
-      // Clean up callback to prevent memory leaks
       window.onYouTubeIframeAPIReady = null;
     };
   }, []);
 
-  // Initialize YT Player when API is ready
+  // Initialize YT Player in background
   useEffect(() => {
     if (apiReady && !playerRef.current) {
       playerRef.current = new window.YT.Player('yt-audio-player', {
@@ -55,15 +67,8 @@ export default function BackgroundMusic({ autoStart }) {
           showinfo: 0
         },
         events: {
-          onReady: (event) => {
-            // Player is initialized and ready
-            if (autoStart) {
-              event.target.playVideo();
-              setIsPlaying(true);
-            }
-          },
           onStateChange: (event) => {
-            // Ensure loop works by manually restarting when ended
+            // Force loop by manual playback on ended state
             if (event.data === window.YT.PlayerState.ENDED) {
               event.target.playVideo();
             }
@@ -73,15 +78,6 @@ export default function BackgroundMusic({ autoStart }) {
     }
   }, [apiReady]);
 
-  // Handle auto-start trigger on envelope open
-  useEffect(() => {
-    if (autoStart && playerRef.current && typeof playerRef.current.playVideo === 'function') {
-      playerRef.current.playVideo();
-      setIsPlaying(true);
-    }
-  }, [autoStart]);
-
-  // Sync play/pause state
   const toggleMusic = () => {
     if (!playerRef.current || typeof playerRef.current.playVideo !== 'function') return;
 
@@ -102,17 +98,21 @@ export default function BackgroundMusic({ autoStart }) {
       </div>
 
       {/* Floating Music Control Button */}
-      <button 
-        className="music-toggle-btn"
-        onClick={toggleMusic}
-        title={isPlaying ? "Pause Music" : "Play Music"}
-      >
-        {isPlaying ? (
-          <Volume2 className="music-icon active" size={20} />
-        ) : (
-          <VolumeX className="music-icon" size={20} />
-        )}
-      </button>
+      {showButton && (
+        <button 
+          className="music-toggle-btn"
+          onClick={toggleMusic}
+          title={isPlaying ? "Pause Music" : "Play Music"}
+        >
+          {isPlaying ? (
+            <Volume2 className="music-icon active" size={20} />
+          ) : (
+            <VolumeX className="music-icon" size={20} />
+          )}
+        </button>
+      )}
     </>
   );
-}
+});
+
+export default BackgroundMusic;

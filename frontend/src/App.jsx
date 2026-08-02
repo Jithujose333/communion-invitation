@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Envelope from './components/Envelope';
 import InvitationCard from './components/InvitationCard';
 import Dashboard from './components/Dashboard';
@@ -8,7 +8,7 @@ import BackgroundMusic from './components/BackgroundMusic';
 export default function App() {
   const [viewState, setViewState] = useState('envelope'); // 'envelope', 'invitation', 'admin'
   const [triggerPigeons, setTriggerPigeons] = useState(false);
-  const [startMusic, setStartMusic] = useState(false);
+  const musicRef = useRef(null);
 
   // Sync hash routing for admin panel
   useEffect(() => {
@@ -42,55 +42,60 @@ export default function App() {
   const handleOpenInvitation = () => {
     setViewState('invitation');
     setTriggerPigeons(true);
-    setStartMusic(true); // Autoplay background music on envelope open (user interaction)
+    // Synchronously trigger YouTube audio playback on user click context
+    if (musicRef.current) {
+      musicRef.current.play();
+    }
   };
 
   if (viewState === 'admin') {
     return <Dashboard onBack={navigateToInvitation} />;
   }
 
-  if (viewState === 'envelope') {
-    return <Envelope onOpen={handleOpenInvitation} />;
-  }
-
   return (
-    <div className="main-invitation-container">
-      {/* Background audio player */}
-      <BackgroundMusic autoStart={startMusic} />
+    <>
+      {/* Background audio player (always mounted so YT API pre-loads) */}
+      <BackgroundMusic ref={musicRef} showButton={viewState === 'invitation'} />
 
-      {/* Pigeon flight overlay animation */}
-      <PigeonFlight active={triggerPigeons} />
+      {viewState === 'envelope' ? (
+        <Envelope onOpen={handleOpenInvitation} />
+      ) : (
+        <div className="main-invitation-container">
+          {/* Pigeon flight overlay animation */}
+          <PigeonFlight active={triggerPigeons} />
 
-      {/* Communion Invitation Card Section */}
-      <InvitationCard />
+          {/* Communion Invitation Card Section */}
+          <InvitationCard />
 
-      {/* Elegant Footer */}
-      <footer className="invitation-footer">
-        <div>Felix & Festin</div>
-        <div style={{ fontSize: '14px', letterSpacing: '4px', textTransform: 'uppercase', color: '#cda34f', marginTop: '10px' }}>
-          15 • 08 • 2026
+          {/* Elegant Footer */}
+          <footer className="invitation-footer">
+            <div>Felix & Festin</div>
+            <div style={{ fontSize: '14px', letterSpacing: '4px', textTransform: 'uppercase', color: '#cda34f', marginTop: '10px' }}>
+              15 • 08 • 2026
+            </div>
+            <div className="footer-credits">
+              Made with Love & Blessings
+            </div>
+            <div style={{ marginTop: '20px' }}>
+              <button 
+                onClick={navigateToAdmin}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#a2b4a9',
+                  fontSize: '11px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px',
+                  cursor: 'pointer',
+                  textDecoration: 'underline'
+                }}
+              >
+                Admin Panel
+              </button>
+            </div>
+          </footer>
         </div>
-        <div className="footer-credits">
-          Made with Love & Blessings
-        </div>
-        <div style={{ marginTop: '20px' }}>
-          <button 
-            onClick={navigateToAdmin}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#a2b4a9',
-              fontSize: '11px',
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              cursor: 'pointer',
-              textDecoration: 'underline'
-            }}
-          >
-            Admin Panel
-          </button>
-        </div>
-      </footer>
-    </div>
+      )}
+    </>
   );
 }
